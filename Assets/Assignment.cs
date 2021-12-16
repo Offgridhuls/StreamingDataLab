@@ -175,9 +175,10 @@ Again, you are being challenged to develop the ability to save and load multiple
 Good luck, journey well.
 
 */
-
 static public class AssignmentPart2
 {
+    const int PartyCharacterDataSignifier = 0;
+    const int PartyCharacterEquipmentDataSignifier = 1;
 
     static public void GameStart()
     {
@@ -206,6 +207,60 @@ static public class AssignmentPart2
         GameContent.RefreshUI();
     }
 
+    static public void SendOnScreenPartyToServerForSharing(NetworkedClient networkClient)
+    {
+
+        LinkedList<string> data = new LinkedList<string>();
+
+            foreach (PartyCharacter pc in GameContent.partyCharacters)
+
+            {
+                   data.AddLast(PartyCharacterDataSignifier + "," + pc.classID + "," + pc.health + "," + pc.mana + "," + pc.strength + "," + pc.agility + "," + pc.wisdom);
+
+                foreach (int equip in pc.equipment)
+                {
+                    data.AddLast(PartyCharacterEquipmentDataSignifier + "," + equip);
+                }
+            }
+
+        networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferDataStart + "");
+
+           foreach(string d in data)
+           {
+            networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferData + "," + d);
+
+            }
+
+        networkClient.SendMessageToHost(ClientToServerSignifiers.PartyTransferDataEnd + "");
+
+    }
+    static public void LoadPartyFromSharedFriend(LinkedList<string> data)
+    {
+
+        GameContent.partyCharacters.Clear();
+        StreamReader sr = new StreamReader(Application.dataPath + Path.DirectorySeparatorChar + "Party.txt");
+
+        foreach (string line in data)
+        {
+
+            Debug.Log(line);
+            string[] csv = line.Split(',');
+
+
+            int signifier = int.Parse(csv[1]);
+
+            if (signifier == PartyCharacterDataSignifier)
+            {
+                PartyCharacter pc = new PartyCharacter(int.Parse(csv[2]), int.Parse(csv[3]), int.Parse(csv[4]), int.Parse(csv[5]), int.Parse(csv[6]), int.Parse(csv[7]));
+                GameContent.partyCharacters.AddLast(pc);
+            }
+            else if (signifier == PartyCharacterEquipmentDataSignifier)
+            {
+                GameContent.partyCharacters.Last.Value.equipment.AddLast(int.Parse(csv[2]));
+            }
+        }
+        GameContent.RefreshUI();
+    }
     static public void NewPartyButtonPressed()
     {
 

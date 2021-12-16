@@ -16,6 +16,8 @@ public class NetworkedClient : MonoBehaviour
     bool isConnected = false;
     int ourClientID;
 
+    LinkedList<string> incomingPartyData;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -102,6 +104,24 @@ public class NetworkedClient : MonoBehaviour
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+
+        string[] csv = msg.Split(',');
+
+        int signifier = int.Parse(csv[0]);
+
+
+        if(signifier == ServerToClientSignifiers.PartyTransferDataStart)
+        {
+            incomingPartyData = new LinkedList<string>();
+        }
+        else if(signifier == ServerToClientSignifiers.PartyTransferData)
+        {
+            incomingPartyData.AddLast(msg);
+        }
+        else if(signifier == ServerToClientSignifiers.PartyTransferDataEnd)
+        {
+            AssignmentPart2.LoadPartyFromSharedFriend(incomingPartyData);
+        }
     }
 
     public bool IsConnected()
@@ -121,4 +141,20 @@ static public class ClientToServerSignifiers
     public const int sendReplay = 4;
 
     public const int JoinSharingRoom = 5;
+
+    public const int PartyTransferDataStart = 100;
+
+    public const int PartyTransferData = 101;
+
+    public const int PartyTransferDataEnd = 102;
+}
+static public class ServerToClientSignifiers
+{
+
+    public const int PartyTransferDataStart = 100;
+
+    public const int PartyTransferData = 101;
+
+    public const int PartyTransferDataEnd = 102;
+
 }

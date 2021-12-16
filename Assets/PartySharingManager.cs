@@ -27,7 +27,7 @@ public class PartySharingManager : MonoBehaviour
 
     private void SendPartyButtonPressed()
     {
-
+        AssignmentPart2.SendOnScreenPartyToServerForSharing(networkedClient);
 
     }
     private void JoinSharingRoomButtonPressed()
